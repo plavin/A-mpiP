@@ -23,6 +23,7 @@ typedef struct _callsite_stats
   unsigned op;
   unsigned rank;
   int csid;
+  int tmpid;
   long long count;
   double cumulativeTime;
   double cumulativeTimeSquared;

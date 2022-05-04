@@ -237,8 +237,8 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       double dur;
       mpiPi_GETTIME (&now);
       dur = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time));
-      printf("TRACE %d -> %d  %f\n", stat->prev_csid, csp->csid, dur);
-      stat->prev_csid = csp->csid;
+      printf("TRACE %d -> %d  %f\n", stat->prev_csid, csp->tmpid, dur);
+      stat->prev_csid = csp->tmpid;
       stat->prev_time = now;
   }
 

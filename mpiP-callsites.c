@@ -47,6 +47,12 @@ void mpiPi_cs_init(callsite_stats_t *csp, void *pc[],
     }
   csp->cookie = MPIP_CALLSITE_STATS_COOKIE;
   mpiPi_cs_reset_stat(csp);
+
+  // trace UGLY
+  {
+      static int tmpCtr = 1;
+      csp->tmpid = tmpCtr++;
+  }
 }
 
 void mpiPi_cs_update(callsite_stats_t *csp, double dur,
