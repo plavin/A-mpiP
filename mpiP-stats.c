@@ -167,6 +167,8 @@ void mpiPi_stats_thr_timer_stop(mpiPi_thread_stat_t *s)
 {
   mpiPi_GETTIME (&s->ts_end);
   s->cum_time += _get_duration(s);
+  s->prev_csid = 0;
+  s->prev_time = 0;
 }
 
 double mpiPi_stats_thr_cum_time(mpiPi_thread_stat_t *s)
@@ -205,6 +207,10 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
   if (!mpiPi_stats_thr_is_on(stat))
     return;
 
+  /* only collect from rank 0 for now */
+  if (rank != 0)
+      return;
+
   key.op = op;
   key.rank = rank;
   key.cookie = MPIP_CALLSITE_STATS_COOKIE;
@@ -224,6 +230,16 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
   /* ASSUME: csp cannot be deleted from list */
   mpiPi_cs_update(csp, dur, sendSize, ioSize, rmaSize,
                   mpiPi.messageCountThreshold);
+
+  /* TRACE */
+  {
+      mpiPi_TIME now, dur;
+      mpiPi_GETTIME (&now);
+      dur = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time));
+      printf("TRACE %d -> %d  %f\n", stat->prev_csid, csp->csid, dur);
+      stat->prev_csid = csp->csid;
+      stat->prev_time = now;
+  }
 
 #if 0
   mpiPi_msg_debug ("mpiPi.messageCountThreshold is %d\n",

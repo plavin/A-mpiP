@@ -16,7 +16,11 @@
 #define _MPIPI_H
 
 #include <assert.h>
+
+#if !defined(Darwin)
 #include <malloc.h>
+#endif
+
 #include <math.h>
 #include <setjmp.h>
 #include <stdio.h>

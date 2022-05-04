@@ -53,6 +53,10 @@ typedef struct {
   mpiPi_TIME ts_start, ts_end;
   double cum_time;
 
+  /* tracing */
+  int prev_csid;
+  mpiPi_TIME prev_time;
+    
   /* Callsite statistics */
   h_t *cs_stats;
   /* Collectives and point-to-point statistics */
