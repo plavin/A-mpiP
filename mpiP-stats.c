@@ -168,7 +168,7 @@ void mpiPi_stats_thr_timer_stop(mpiPi_thread_stat_t *s)
   mpiPi_GETTIME (&s->ts_end);
   s->cum_time += _get_duration(s);
   s->prev_csid = 0;
-  s->prev_time = 0;
+  s->prev_time = s->ts_end;
 }
 
 double mpiPi_stats_thr_cum_time(mpiPi_thread_stat_t *s)
@@ -233,7 +233,8 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
 
   /* TRACE */
   {
-      mpiPi_TIME now, dur;
+      mpiPi_TIME now;
+      double dur;
       mpiPi_GETTIME (&now);
       dur = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time));
       printf("TRACE %d -> %d  %f\n", stat->prev_csid, csp->csid, dur);
