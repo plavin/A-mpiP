@@ -240,7 +240,7 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       double dur;
       mpiPi_GETTIME (&now);
       dur = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time));
-      printf("TRACE %d -> %d %.0f %s ", stat->prev_csid, csp->tmpid, dur,
+      printf("TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur,
              mpiPi.lookup[op - mpiPi_BASE].name);
       stat->prev_csid = csp->tmpid;
       stat->prev_time = now;
@@ -258,7 +258,7 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
           // mpi trace
           if (isColl) {
               int nranks, *ranks, *gRanksOut, i;
-
+              
               // translate this group to global ranks
               PMPI_Group_size(thisGroup, &nranks);
               ranks = (int*)malloc(sizeof(int) * nranks);
@@ -272,7 +272,10 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
               // print
               printf("coll %p %.0f to ", *comm, sendSize);
               for(i=0; i < nranks; ++i) {
-                  printf("%d ", gRanksOut[i]);
+                  printf("%d", gRanksOut[i]);
+                  if (sendcount) {printf(">%d", sendcount[i]);}
+                  if (recvcount) {printf("<%d", recvcount[i]);}
+                  printf(" ");
               }
               printf("\n");
               
