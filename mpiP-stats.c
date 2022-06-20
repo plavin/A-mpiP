@@ -193,9 +193,12 @@ int mpiPi_stats_thr_is_on(mpiPi_thread_stat_t *stat)
 
 void
 mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
-                           unsigned op, unsigned rank, void **pc,
-                           double dur, double sendSize, double ioSize,
-                           double rmaSize)
+                        unsigned op, unsigned rank, void **pc,
+                        double dur, double sendSize, double ioSize,
+                        double rmaSize, int isColl, MPI_Comm *comm,
+                        int dest,
+                        const int *sendcount, 
+                        const int *recvcount)
 {
   int i;
   callsite_stats_t *csp = NULL;
@@ -241,6 +244,44 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
              mpiPi.lookup[op - mpiPi_BASE].name);
       stat->prev_csid = csp->tmpid;
       stat->prev_time = now;
+
+      {
+          // get global group
+          MPI_Group worldGroup, thisGroup;
+          int nranks, *ranks, *ranksOut, i;
+          if (MPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
+              printf("MPI Comm Group  Error\n");
+          }
+          if (MPI_Comm_group(*comm, &thisGroup) != MPI_SUCESS) {
+              printf("MPI Comm Group Error\n");
+          }
+          MPI_Group_size(thisGroup, &nranks);
+          ranks = (int*)malloc(sizeof(int) * nranks);
+          ranksOut = (int*)malloc(sizeof(int) * nranks);
+          for(i=0; i < nranks; ++i) {
+              ranks[i] = i;
+          }
+          MPI_Group_translate_ranks(thisGroup, nranks, ranks,
+                                    worldGroup, ranksOut);
+          printf("TRACE comm %p ", comm);
+          for(i=0; i < nranks; ++i) {
+              printf("%d:%d ", ranks[i], ranksOut[i]);
+          }
+          printf("\n");
+          
+          // mpi trace
+          if (isColl) {
+              
+          } else {
+              // pt2pt
+              printf("  TRACE p2p %.0f to %d\n", sendSize, dest);
+          }
+
+          free(ranks);
+          free(ranksOut);
+          MPI_Group_free(&worldGroup);
+          MPI_Group_free(&thisGroup);
+      }
   }
 
 #if 0

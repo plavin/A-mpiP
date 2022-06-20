@@ -640,6 +640,8 @@ class fdecl:
         self.wrapperPreList = []
         self.wrapperPostList = []
         self.nowrapper = 0
+        self.varSend = 0 #variable send count
+        self.varRecv = 0 #variable recv count
         self.paramConciseList = []
         self.extrafields = {}
         self.extrafieldsList = []
@@ -665,6 +667,10 @@ def ProcessDirectiveLine(lastFunction, line):
     tokens = line.split()
     if tokens[0] == "nowrapper":
         fdict[lastFunction].nowrapper = 1
+    elif tokens[0] == "varSend":
+        fdict[lastFunction].varSend = 1
+    elif tokens[0] == "varRecv":
+        fdict[lastFunction].varRecv = 1
     elif tokens[0] == "extrafield":
         fdict[lastFunction].extrafieldsList.append(tokens[2])
         fdict[lastFunction].extrafields[tokens[2]] = tokens[1]
@@ -1175,6 +1181,18 @@ def CreateWrapper(funct, olist):
                       + "rmaSize = (double)(tsize * *"
                       +  fdict[funct].rmaCountPname + ");\n")
 
+    # extended info for tracing
+    isCollective = (funct in collectiveList)
+    destStr = "-1, ";
+    if funct in pt2ptList :
+        destStr = "*dest, "
+    #check for communicator
+    commStr = "0, "
+    for i in fdict[funct].paramConciseList:
+        if (fdict[funct].paramDict[i].basetype == "MPI_Comm"):
+            commStr = fdict[funct].paramDict[i].name + ", "
+            break
+        
     olist.append("\n" \
                  + "if ( dur < 0 )\n"
                  + "  mpiPi_msg_warn(\"Rank %5d : Negative time difference : %11.9f in %s\\n\", mpiPi.rank, dur, \"" + funct + "\");\n"
@@ -1183,9 +1201,14 @@ def CreateWrapper(funct, olist):
                   + "mpiPi.rank, "
                   + "call_stack, "
                   + "dur, "
-                  + "(double)messSize,"
-                  + "(double)ioSize,"
-                  + "(double)rmaSize"
+                  + "(double)messSize, "
+                  + "(double)ioSize, "
+                  + "(double)rmaSize, "
+                  + ("0, ","1, ")[isCollective]
+                  + commStr
+                  + destStr
+                  + ("0, ","sendcounts, ")[fdict[funct].varSend]
+                  + ("0","recvcounts")[fdict[funct].varRecv]
                   + ");\n" )
 
     if funct in collectiveList :

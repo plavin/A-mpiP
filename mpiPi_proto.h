@@ -42,7 +42,17 @@ extern void mpiPi_update_callsite_stats (mpiPi_mt_stat_tls_t *hndl,
                                          unsigned op, unsigned rank,
                                          void **pc, double dur,
                                          double sendSize, double ioSize,
-                                         double rmaSize);
+                                         double rmaSize,
+                                         int isColl, //is collective
+                                         MPI_Comm *comm, //communicator
+                                         int dest, // destination
+                                         const int *sendcount, //sendcount
+                                                         //of mpi*v
+                                                         //calls
+                                         const int *recvcount //sendcount
+                                                        //of mpi*v
+                                                        //calls
+                                         );
 extern char *mpiPdemangle (const char *mangledSym);
 extern int mpiP_find_src_loc (void *i_addr_hex, char **o_file_str,
                               int *o_lineno, char **o_funct_str);

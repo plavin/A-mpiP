@@ -815,14 +815,18 @@ void
 mpiPi_update_callsite_stats (mpiPi_mt_stat_tls_t *tls,
                              unsigned op, unsigned rank, void **pc,
                              double dur, double sendSize, double ioSize,
-                             double rmaSize)
+                             double rmaSize, int isColl, MPI_Comm *comm,
+                             int dest,
+                             const int *sendcount, 
+                             const int *recvcount)
 {
   int i;
   callsite_stats_t *csp = NULL;
   callsite_stats_t key;
 
   mpiPi_stats_mt_cs_upd(tls, op, rank, pc, dur,
-                        sendSize, ioSize, rmaSize);
+                        sendSize, ioSize, rmaSize,
+                        isColl, comm, dest, sendcount, recvcount);
 }
 
 void

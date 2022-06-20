@@ -44,7 +44,9 @@ void mpiPi_stats_mt_cs_gather(mpiPi_mt_stat_t *stat,
 void mpiPi_stats_mt_cs_upd (mpiPi_mt_stat_tls_t *hndl,
                             unsigned op, unsigned rank, void **pc,
                             double dur, double sendSize, double ioSize,
-                            double rmaSize);
+                            double rmaSize, int isColl, MPI_Comm *comm,
+                            int dest, const int *sendcount, 
+                            const int *recvcount);
 
 void mpiPi_stats_mt_cs_lookup(mpiPi_mt_stat_t *stat,
                               callsite_stats_t *task_stats,

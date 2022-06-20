@@ -221,10 +221,14 @@ void mpiPi_stats_mt_cs_gather(mpiPi_mt_stat_t *mt_state,
 void mpiPi_stats_mt_cs_upd (mpiPi_mt_stat_tls_t *hndl,
                             unsigned op, unsigned rank, void **pc,
                             double dur, double sendSize, double ioSize,
-                            double rmaSize)
+                            double rmaSize, int isColl,
+                            MPI_Comm *comm,
+                            int dest, const int *sendcount, 
+                            const int *recvcount)
 {
   mpiPi_stats_thr_cs_upd(hndl->tls_ptr, op, rank, pc, dur,
-                         sendSize, ioSize, rmaSize);
+                         sendSize, ioSize, rmaSize,
+                         isColl, comm, dest, sendcount, recvcount);
 }
 
 void mpiPi_stats_mt_cs_lookup(mpiPi_mt_stat_t *stat,
