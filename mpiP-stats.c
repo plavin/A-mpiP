@@ -249,19 +249,19 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
           // get global group
           MPI_Group worldGroup, thisGroup;
           int nranks, *ranks, *ranksOut, i;
-          if (MPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
+          if (PMPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
               printf("MPI Comm Group  Error\n");
           }
-          if (MPI_Comm_group(*comm, &thisGroup) != MPI_SUCCESS) {
+          if (PMPI_Comm_group(*comm, &thisGroup) != MPI_SUCCESS) {
               printf("MPI Comm Group Error\n");
           }
-          MPI_Group_size(thisGroup, &nranks);
+          PMPI_Group_size(thisGroup, &nranks);
           ranks = (int*)malloc(sizeof(int) * nranks);
           ranksOut = (int*)malloc(sizeof(int) * nranks);
           for(i=0; i < nranks; ++i) {
               ranks[i] = i;
           }
-          MPI_Group_translate_ranks(thisGroup, nranks, ranks,
+          PMPI_Group_translate_ranks(thisGroup, nranks, ranks,
                                     worldGroup, ranksOut);
           printf("TRACE comm %p ", comm);
           for(i=0; i < nranks; ++i) {
@@ -279,8 +279,8 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
 
           free(ranks);
           free(ranksOut);
-          MPI_Group_free(&worldGroup);
-          MPI_Group_free(&thisGroup);
+          PMPI_Group_free(&worldGroup);
+          PMPI_Group_free(&thisGroup);
       }
   }
 
