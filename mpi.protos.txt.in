@@ -19,12 +19,19 @@ directives
 int MPI_Allgather ( mpip_const_void_t *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm )
 
 int MPI_Allgatherv ( mpip_const_void_t *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, mpip_const_int_t *recvcounts, mpip_const_int_t *displs, MPI_Datatype recvtype, MPI_Comm comm )
+directives
+        varRecv
+directives
 
 int MPI_Allreduce ( mpip_const_void_t *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm )
 
 int MPI_Alltoall ( mpip_const_void_t *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcnt, MPI_Datatype recvtype, MPI_Comm comm )
 
-int MPI_Alltoallv ( mpip_const_void_t *sendbuf, mpip_const_int_t *sendcnts, mpip_const_int_t *sdispls, MPI_Datatype sendtype, void *recvbuf, mpip_const_int_t *recvcnts, mpip_const_int_t *rdispls, MPI_Datatype recvtype, MPI_Comm comm )
+int MPI_Alltoallv ( mpip_const_void_t *sendbuf, mpip_const_int_t *sendcounts, mpip_const_int_t *sdispls, MPI_Datatype sendtype, void *recvbuf, mpip_const_int_t *recvcounts, mpip_const_int_t *rdispls, MPI_Datatype recvtype, MPI_Comm comm )
+directives
+        varSend
+        varRecv
+directives
 
 int MPI_Barrier ( MPI_Comm comm )
 
@@ -142,7 +149,11 @@ directives
 directives
 
 int MPI_Gather ( mpip_const_void_t *sendbuf, int sendcnt, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm )
-int MPI_Gatherv ( mpip_const_void_t *sendbuf, int sendcnt, MPI_Datatype sendtype, void *recvbuf, mpip_const_int_t *recvcnts, mpip_const_int_t *displs, MPI_Datatype recvtype, int root, MPI_Comm comm )
+int MPI_Gatherv ( mpip_const_void_t *sendbuf, int sendcnt, MPI_Datatype sendtype, void *recvbuf, mpip_const_int_t *recvcounts, mpip_const_int_t *displs, MPI_Datatype recvtype, int root, MPI_Comm comm )
+directives
+        varRecv
+directives
+
 int MPI_Get_count ( MPI_Status *status, MPI_Datatype datatype, int *count )
 directives
 	nowrapper
@@ -279,7 +290,10 @@ int MPI_Recv_init ( void *buf, int count, MPI_Datatype datatype, int source, int
 
 int MPI_Reduce ( mpip_const_void_t *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm )
 
-int MPI_Reduce_scatter ( mpip_const_void_t *sendbuf, void *recvbuf, mpip_const_int_t *recvcnts, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm )
+int MPI_Reduce_scatter ( mpip_const_void_t *sendbuf, void *recvbuf, mpip_const_int_t *recvcounts, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm )
+directives
+        varRecv
+directives
 
 @MPI_Fint MPI_Request_c2f ( MPI_Request c_request )
 
@@ -293,7 +307,10 @@ int MPI_Scan ( mpip_const_void_t *sendbuf, void *recvbuf, int count, MPI_Datatyp
 
 int MPI_Scatter ( mpip_const_void_t *sendbuf, int sendcnt, MPI_Datatype sendtype, void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root, MPI_Comm comm )
 
-int MPI_Scatterv ( mpip_const_void_t *sendbuf, mpip_const_int_t *sendcnts, mpip_const_int_t *displs, MPI_Datatype sendtype, void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root, MPI_Comm comm )
+int MPI_Scatterv ( mpip_const_void_t *sendbuf, mpip_const_int_t *sendcounts, mpip_const_int_t *displs, MPI_Datatype sendtype, void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root, MPI_Comm comm )
+directives
+        varSend
+directives
 
 int MPI_Send ( mpip_const_void_t *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm )
 
