@@ -240,7 +240,7 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       double dur;
       mpiPi_GETTIME (&now);
       dur = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time));
-      printf("TRACE %d -> %d %f %s\n", stat->prev_csid, csp->tmpid, dur,
+      printf("TRACE %d -> %d %.0f %s ", stat->prev_csid, csp->tmpid, dur,
              mpiPi.lookup[op - mpiPi_BASE].name);
       stat->prev_csid = csp->tmpid;
       stat->prev_time = now;
@@ -270,7 +270,7 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                                          worldGroup, gRanksOut);
 
               // print
-              printf("TRACE coll %p %.0f to ", *comm, sendSize);
+              printf("coll %p %.0f to ", *comm, sendSize);
               for(i=0; i < nranks; ++i) {
                   printf("%d ", gRanksOut[i]);
               }
@@ -279,12 +279,17 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
               free(ranks);
               free(gRanksOut);             
           } else {
-              // pt2pt
-              int outRank;
-              // translate the destination rank to global
-              PMPI_Group_translate_ranks(thisGroup, 1, &dest,
-                                         worldGroup, &outRank);
-              printf("  TRACE p2p %.0f to %d:%d\n", sendSize, dest, outRank);
+              if (dest != -1) {
+                  // pt2pt
+                  int outRank;
+                  // translate the destination rank to global
+                  PMPI_Group_translate_ranks(thisGroup, 1, &dest,
+                                             worldGroup, &outRank);
+                  printf("p2p %.0f to %d:%d\n", sendSize,
+                         dest, outRank);
+              } else {
+                  printf("\n");
+              }
           }
 
           PMPI_Group_free(&worldGroup);
