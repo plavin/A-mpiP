@@ -252,7 +252,7 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
           if (MPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
               printf("MPI Comm Group  Error\n");
           }
-          if (MPI_Comm_group(*comm, &thisGroup) != MPI_SUCESS) {
+          if (MPI_Comm_group(*comm, &thisGroup) != MPI_SUCCESS) {
               printf("MPI Comm Group Error\n");
           }
           MPI_Group_size(thisGroup, &nranks);
