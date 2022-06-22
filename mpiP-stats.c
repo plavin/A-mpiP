@@ -248,11 +248,14 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       {
           // get global and this group for translation
           MPI_Group worldGroup, thisGroup;
-          if (PMPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
-              printf("MPI Comm Group  Error\n");
-          }
-          if (PMPI_Comm_group(*comm, &thisGroup) != MPI_SUCCESS) {
-              printf("MPI Comm Group Error\n");
+          int doTrans = (comm != NULL); //should we do the translation
+          if (doTrans) {
+              if (PMPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
+                  printf("MPI Comm Group  Error\n");
+              }
+              if (PMPI_Comm_group(*comm, &thisGroup) != MPI_SUCCESS) {
+                  printf("MPI Comm Group Error\n");
+              }
           }
           
           // mpi trace
@@ -260,29 +263,33 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
               int nranks, *ranks, *gRanksOut, i;
               
               // translate this group to global ranks
-              PMPI_Group_size(thisGroup, &nranks);
-              ranks = (int*)malloc(sizeof(int) * nranks);
-              gRanksOut = (int*)malloc(sizeof(int) * nranks);
-              for(i=0; i < nranks; ++i) {
-                  ranks[i] = i;
-              }
-              PMPI_Group_translate_ranks(thisGroup, nranks, ranks,
-                                         worldGroup, gRanksOut);
-
-              // print
-              printf("coll %p %.0f to ", *comm, sendSize);
-              for(i=0; i < nranks; ++i) {
-                  printf("%d", gRanksOut[i]);
-                  if (sendcount) {printf(">%d", sendcount[i]);}
-                  if (recvcount) {printf("<%d", recvcount[i]);}
-                  printf(" ");
+              if (doTrans) {
+                  PMPI_Group_size(thisGroup, &nranks);
+                  ranks = (int*)malloc(sizeof(int) * nranks);
+                  gRanksOut = (int*)malloc(sizeof(int) * nranks);
+                  for(i=0; i < nranks; ++i) {
+                      ranks[i] = i;
+                  }
+                  PMPI_Group_translate_ranks(thisGroup, nranks, ranks,
+                                             worldGroup, gRanksOut);
+                  
+                  // print
+                  printf("coll %p %.0f to ", *comm, sendSize);
+                  for(i=0; i < nranks; ++i) {
+                      printf("%d", gRanksOut[i]);
+                      if (sendcount) {printf(">%d", sendcount[i]);}
+                      if (recvcount) {printf("<%d", recvcount[i]);}
+                      printf(" ");
+                  }
               }
               printf("\n");
-              
-              free(ranks);
-              free(gRanksOut);             
+
+              if (doTrans) {
+                  free(ranks);
+                  free(gRanksOut);
+              }
           } else {
-              if (dest != -1) {
+              if (doTrans && dest != -1) {
                   // pt2pt
                   int outRank;
                   // translate the destination rank to global
@@ -295,8 +302,10 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
               }
           }
 
-          PMPI_Group_free(&worldGroup);
-          PMPI_Group_free(&thisGroup);
+          if (doTrans) {
+              PMPI_Group_free(&worldGroup);
+              PMPI_Group_free(&thisGroup);
+          }
       }
 
       // reset time so we don't include trace time
