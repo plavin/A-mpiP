@@ -248,7 +248,9 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       {
           // get global and this group for translation
           MPI_Group worldGroup, thisGroup;
-          int doTrans = (comm != NULL); //should we do the translation
+          // Do not to the translation if the comm object is null
+          // or if it has been set to MPI_COMM_NULL by MPI_Comm_free
+          int doTrans = (comm != NULL) && (*comm != MPI_COMM_NULL);
           if (doTrans) {
               if (PMPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
                   printf("MPI Comm Group  Error\n");
