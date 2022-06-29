@@ -10,6 +10,7 @@
  *
  * ============================================================================
  */
+extern FILE *tracefile;
 
 static int
 get_histogram_bin (mpiPi_histogram_t * h, int val)
@@ -240,7 +241,7 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       double dur;
       mpiPi_GETTIME (&now);
       dur = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time));
-      printf("TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur,
+      fprintf(tracefile, "TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur,
              mpiPi.lookup[op - mpiPi_BASE].name);
       stat->prev_csid = csp->tmpid;
       stat->prev_time = now;
@@ -253,10 +254,10 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
           int doTrans = (comm != NULL) && (*comm != MPI_COMM_NULL);
           if (doTrans) {
               if (PMPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
-                  printf("MPI Comm Group  Error\n");
+                  fprintf(tracefile, "MPI Comm Group  Error\n");
               }
               if (PMPI_Comm_group(*comm, &thisGroup) != MPI_SUCCESS) {
-                  printf("MPI Comm Group Error\n");
+                  fprintf(tracefile, "MPI Comm Group Error\n");
               }
           }
           
@@ -276,15 +277,15 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                                              worldGroup, gRanksOut);
                   
                   // print
-                  printf("coll %p %.0f to ", *comm, sendSize);
+                  fprintf(tracefile, "coll %p %.0f to ", *comm, sendSize);
                   for(i=0; i < nranks; ++i) {
-                      printf("%d", gRanksOut[i]);
-                      if (sendcount) {printf(">%d", sendcount[i]);}
-                      if (recvcount) {printf("<%d", recvcount[i]);}
-                      printf(" ");
+                      fprintf(tracefile, "%d", gRanksOut[i]);
+                      if (sendcount) {fprintf(tracefile, ">%d", sendcount[i]);}
+                      if (recvcount) {fprintf(tracefile, "<%d", recvcount[i]);}
+                      fprintf(tracefile, " ");
                   }
               }
-              printf("\n");
+              fprintf(tracefile, "\n");
 
               if (doTrans) {
                   free(ranks);
@@ -297,10 +298,10 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                   // translate the destination rank to global
                   PMPI_Group_translate_ranks(thisGroup, 1, &dest,
                                              worldGroup, &outRank);
-                  printf("p2p %.0f to %d:%d\n", sendSize,
+                  fprintf(tracefile, "p2p %.0f to %d:%d\n", sendSize,
                          dest, outRank);
               } else {
-                  printf("\n");
+                  fprintf(tracefile, "\n");
               }
           }
 

@@ -24,6 +24,7 @@ static char *svnid = "$Id$";
 #include "symbols.h"
 #endif
 
+FILE *tracefile;
 
 static int argc = 0;
 static char **argv = NULL;
@@ -57,6 +58,8 @@ mpiPi_getenv ()
 
   mpiPi.outputDir = ".";
 
+  tracefile = stdout;
+
   ep = getenv ("MPIP");
   mpiPi.envStr = (ep ? strdup (ep) : 0);
   optind = 1;			/* reset to avoid conflicts if getopt already called */
@@ -80,7 +83,7 @@ mpiPi_getenv ()
 
       av[ac] = NULL;
 
-      for (; ((c = getopt (ac, av, "cdef:gk:lm:noprs:t:vx:yz")) != EOF);)
+      for (; ((c = getopt (ac, av, "cdef:gk:lm:noprs:t:vx:yza:")) != EOF);)
         {
           switch (c)
             {
@@ -264,6 +267,11 @@ mpiPi_getenv ()
               break;
 
             case 'a':
+              tracefile = fopen(optarg, "w+");
+              if (tracefile == NULL) {
+                mpiPi_abort("Unable to open trace file (%s)\n", optarg);
+              }
+              break;
             case 'b':
             case 'h':
             case 'i':
