@@ -10,7 +10,6 @@
  *
  * ============================================================================
  */
-extern FILE *tracefile;
 
 static int
 get_histogram_bin (mpiPi_histogram_t * h, int val)
@@ -211,8 +210,8 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
   if (!mpiPi_stats_thr_is_on(stat))
     return;
 
-  /* only collect from rank 0 for now */
-  if (rank != 0)
+  /* only collect from rank 0 unles specified */
+  if ((rank != 0) && (traceAllRanks == 0))
       return;
 
   key.op = op;
