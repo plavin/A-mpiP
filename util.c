@@ -24,6 +24,10 @@ static char *svnid = "$Id$";
 #include "symbols.h"
 #endif
 
+// file to trace to
+FILE *tracefile;
+// trace all ranks or just rank 0
+int traceAllRanks;
 
 static int argc = 0;
 static char **argv = NULL;
@@ -57,6 +61,9 @@ mpiPi_getenv ()
 
   mpiPi.outputDir = ".";
 
+  tracefile = stdout;
+  traceAllRanks = 0;
+
   ep = getenv ("MPIP");
   mpiPi.envStr = (ep ? strdup (ep) : 0);
   optind = 1;			/* reset to avoid conflicts if getopt already called */
@@ -80,10 +87,21 @@ mpiPi_getenv ()
 
       av[ac] = NULL;
 
-      for (; ((c = getopt (ac, av, "cdef:gk:lm:noprs:t:vx:yz")) != EOF);)
+      for (; ((c = getopt (ac, av, "Acdef:gk:lm:noprs:t:vx:yza:")) != EOF);)
         {
           switch (c)
             {
+	    case 'A':
+	      // trace all ranks - this should come BEFORE the '-a'
+	      // filename to ensure seperate files.
+	      traceAllRanks = 1;
+	      if (mpiPi.rank == 0) {
+		mpiPi_msg("Tracing All Ranks\n");
+		if (tracefile != stdout) {
+		  mpiPi_msg("Will Trace all ranks to same file. To trace to different files, specify '-A' before '-a'\n");
+		}
+	      }
+	      break;
             case 'f':
               mpiPi.outputDir = optarg;
               if (mpiPi.rank == 0)
@@ -264,6 +282,19 @@ mpiPi_getenv ()
               break;
 
             case 'a':
+	      {
+		if (traceAllRanks) {
+		  char fileStr[200];
+		  sprintf(fileStr, "%s_%d", optarg, mpiPi.rank);
+		  tracefile = fopen(fileStr, "w+");
+		} else {
+		  tracefile = fopen(optarg, "w+");
+		}
+		if (tracefile == NULL) {
+		  mpiPi_abort("Unable to open trace file (%s)\n", optarg);
+		}
+	      }
+              break;
             case 'b':
             case 'h':
             case 'i':

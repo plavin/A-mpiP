@@ -63,6 +63,10 @@ typedef int mpip_const_int_t;
 typedef char mpip_const_char_t;
 #endif
 
+//trace file
+extern FILE *tracefile;
+extern int traceAllRanks;
+
 typedef char mpiPi_hostname_t[MPIPI_HOSTNAME_LEN_MAX];
 
 typedef struct callsite_src_id_cache_entry_t
