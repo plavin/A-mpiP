@@ -23,12 +23,13 @@ sub HELP_MESSAGE() {
     print("-g        : print Graphviz graph\n");
     print("-c        : print C++ motif skeleton\n");
     print("-C <file> : filename for C++ skeleton\n");
+    print("-m        : print message sizes\n");
     exit(1);
 }
 
 # 'main'
 
-getopts("cpgf:C:", \%opt) or usage();
+getopts("mcpgf:C:", \%opt) or usage();
 if (!defined($opt{f})) {
     HELP_MESSAGE();
 }
@@ -78,11 +79,19 @@ while(defined($line = <IN>)) {
                     # new communicator (or, at least, new list of ranks)
                     $commSet{$commStr} = $commIter."(sz".(scalar(@ws)-10).")";
                     $commIter++;
-                } 
+                }
             } elsif ($type eq "p2p") {
                 $size = $ws[7];
             } else {
                 printf("Type error? %s\n", $line);
+            }
+
+            # record message size
+            if ($size != -1) {
+                if (!defined($commSizes{$to})) {
+                    $commSizes{$to} = "$to ($call): ";
+                }
+                $commSizes{$to} .= $size . " "
             }
         } 
 
@@ -154,6 +163,16 @@ foreach $f (keys %last) {
 }
 
 #output
+if (defined($opt{m})) {
+    # message sizes
+    printf("NOTE: Does not currently capture variable collective sizes\n");
+    foreach $f (sort {$a <=> $b} keys %last) {
+        if (defined($commSizes{$f})) {
+            printf("%s\n", $commSizes{$f});
+        }
+    }
+}
+
 if (defined($opt{p})) {
     # branch pattern
     foreach $f (keys %last) {
