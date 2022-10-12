@@ -24,7 +24,7 @@ typedef struct _callsite_stats
   unsigned rank;
   int csid;
   int tmpid;
-  int hash_id;
+  //int hash_id;
   long long count;
   double cumulativeTime;
   double cumulativeTimeSquared;
@@ -68,7 +68,6 @@ void mpiPi_cs_cache_init();
  * callsite id.
  */
 int mpiPi_query_src (callsite_stats_t * p);
-int mpiPi_query_csp_hash (callsite_stats_t * p);
 
 #endif // MPIPCALLSITES_H
 

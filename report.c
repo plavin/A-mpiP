@@ -577,8 +577,8 @@ mpiPi_print_callsites (FILE * fp)
         }
     }
 
-  fprintf (fp, "%3s %3s %3s %-*s %5s %-*s %s\n",
-           "ID", "HashID", "Lev", fileLenMax, "File/Address", "Line", funcLenMax,
+  fprintf (fp, "%3s %3s % 3s %3s %-*s %5s %-*s %s\n",
+           "ID", "TmpID", "HashID", "Lev", fileLenMax, "File/Address", "Line", funcLenMax,
            "Parent_Funct", "MPI_Call");
 
   for (i = 0; i < ac; i++)
@@ -603,9 +603,10 @@ mpiPi_print_callsites (FILE * fp)
               (strcmp (av[i]->filename[j], "[unknown]") == 0 ||
                strcmp (av[i]->functname[j], "[unknown]") == 0))
             {
-              fprintf (fp, "%3d %3d %3d %-*s %-*s %s\n",
+              fprintf (fp, "%3d %3d %3d %3d %-*s %-*s %s\n",
                   // PATRICK
                        av[i]->id,
+                       av[i]->tmpid,
                        av[i]->hash_id,
                        frames_printed,
                        fileLenMax + 6,
@@ -616,9 +617,10 @@ mpiPi_print_callsites (FILE * fp)
             }
           else
             {
-              fprintf (fp, "%3d %3d %3d %-*s %5d %-*s %s\n",
+              fprintf (fp, "%3d %3d %3d %3d %-*s %5d %-*s %s\n",
                   // PATRICK
                        av[i]->id,
+                       av[i]->tmpid,
                        av[i]->hash_id,
                        frames_printed,
                        fileLenMax,
