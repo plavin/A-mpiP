@@ -73,6 +73,7 @@ typedef struct callsite_src_id_cache_entry_t
 {
   int id;			/* unique id for this src code/stack location */
   int op;			/* at the lowest level, this is a MPI op */
+  int hash_id;
   char *filename[MPIP_CALLSITE_STACK_DEPTH_MAX];
   char *functname[MPIP_CALLSITE_STACK_DEPTH_MAX];
   int line[MPIP_CALLSITE_STACK_DEPTH_MAX];

@@ -236,6 +236,23 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
 
   /* TRACE */
   {
+      // PATRICK
+      /*
+      int i, ac;
+      callsite_stats_t *av;
+      h_search(callsite_src_id_cache, --, (void **) &av);
+      */
+      //h_gather_data(callsite_src_id_cache, &ac, (void ***) &av);
+      // END PATRICK
+
+      /* PATRICK 2
+      int hashval = mpiPi_query_csp_hash(csp);
+      if (hashval == 0) {
+        printf("bummer\n");
+        exit(1);
+      }
+      */
+
       mpiPi_TIME now;
       double dur;
       mpiPi_GETTIME (&now);

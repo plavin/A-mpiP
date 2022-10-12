@@ -168,6 +168,7 @@ callsite_src_id_cache_comparator (const void *p1, const void *p2)
         {
           if (csp_1->filename[i] != NULL && csp_2->filename[i] != NULL)
             {
+              // Check filenames
               if (strcmp (csp_1->filename[i], csp_2->filename[i]) > 0)
                 {
                   return 1;
@@ -176,7 +177,11 @@ callsite_src_id_cache_comparator (const void *p1, const void *p2)
                 {
                   return -1;
                 }
+
+              // If files are the same, check line numbers
               express (line[i]);
+
+              // If filenames and line numbers are the same, check function names
               if (strcmp (csp_1->functname[i], csp_2->functname[i]) > 0)
                 {
                   return 1;
@@ -187,13 +192,14 @@ callsite_src_id_cache_comparator (const void *p1, const void *p2)
                 }
             }
 
+          // If filenames, line numbers, and function names are the same, check PC
           express (pc[i]);
         }
     }
 #undef express
   return 0;
 }
-
+//PATRICK - make static and remove from .h
 static int
 callsite_src_id_cache_hashkey (const void *p1)
 {
@@ -215,7 +221,9 @@ callsite_src_id_cache_hashkey (const void *p1)
         }
       res ^= cs1->line[i];
     }
-  return 662917 ^ res;
+
+  cs1->hash_id = 662917 ^ res;
+  return cs1->hash_id;
 }
 
 void mpiPi_cs_cache_init()
@@ -304,6 +312,7 @@ mpiPi_query_src (callsite_stats_t * p)
   int i;
   callsite_src_id_cache_entry_t key;
   callsite_src_id_cache_entry_t *csp;
+  //printf(" p->tmpid: %d\n", p->tmpid);
   assert (p);
 
   /* Because multiple pcs can map to the same source line, we must
@@ -362,6 +371,73 @@ mpiPi_query_src (callsite_stats_t * p)
   return p->csid;
 }
 
+int
+mpiPi_query_csp_hash (callsite_stats_t * p)
+{
+  int i;
+  callsite_src_id_cache_entry_t key;
+  callsite_src_id_cache_entry_t *csp;
+  assert (p);
+
+  /* Because multiple pcs can map to the same source line, we must
+     check that mapping here. If we got unknown, then we assign
+     different ids */
+  bzero (&key, sizeof (callsite_src_id_cache_entry_t));
+
+  for (i = 0; (i < mpiPi.fullStackDepth) && (p->pc[i] != NULL); i++)
+    {
+      if (mpiPi.do_lookup == 1)
+        mpiPi_query_pc (p->pc[i], &(p->filename[i]), &(p->functname[i]),
+                        &(p->lineno[i]));
+      else
+        {
+          p->filename[i] = strdup ("[unknown]");
+          p->functname[i] = strdup ("[unknown]");
+          p->lineno[i] = 0;
+        }
+
+      key.filename[i] = p->filename[i];
+      key.functname[i] = p->functname[i];
+      key.line[i] = p->lineno[i];
+      key.pc[i] = p->pc[i];
+    }
+
+  /* MPI ID is compared when stack depth is 0 */
+  key.id = p->op - mpiPi_BASE;
+
+  return callsite_src_id_cache_hashkey((void*) &key);
+  /* lookup/generate an ID based on the callstack, not just the callsite pc */
+  ////////if (h_search (callsite_src_id_cache, &key, (void **) &csp) == NULL)
+  //////return (callsite_src_id_cache_entry_t *) h_search (callsite_src_id_cache, &key, (void **) &csp);
+    /*
+    {
+      // create a new entry, and assign an id based on callstack
+      csp =
+          (callsite_src_id_cache_entry_t *)
+          malloc (sizeof (callsite_src_id_cache_entry_t));
+      bzero (csp, sizeof (callsite_src_id_cache_entry_t));
+
+      for (i = 0; (i < mpiPi.fullStackDepth) && (p->pc[i] != NULL); i++)
+        {
+          csp->filename[i] = strdup (key.filename[i]);
+          csp->functname[i] = strdup (key.functname[i]);
+          csp->line[i] = key.line[i];
+          csp->pc[i] = p->pc[i];
+        }
+      csp->op = p->op;
+      if (mpiPi.reportStackDepth == 0)
+        csp->id = csp->op - mpiPi_BASE;
+      else
+        csp->id = callsite_src_id_counter++;
+      h_insert (callsite_src_id_cache, csp);
+    }
+
+  // assign ID to this record
+  p->csid = csp->id;
+
+  return p->csid;
+  */
+}
 /*
 
   <license>
