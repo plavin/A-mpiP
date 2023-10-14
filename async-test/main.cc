@@ -3,6 +3,10 @@
 #include <mpi.h>
 #include <unistd.h>
 
+#ifdef SCOREP_USER_ENABLE
+#include <scorep/SCOREP_User.h>
+#endif //SCOREP_USER_ENABLE
+
 void check_error(int mpi_error) {
     if (mpi_error != MPI_SUCCESS) {
         printf("Error on line: %d\n", __LINE__);
@@ -10,24 +14,10 @@ void check_error(int mpi_error) {
     }
 }
 
-int main(int argc, char **argv) {
-
-    int rank;
-    int mpi_error;
-
-    MPI_Init(&argc, &argv);
-
-    mpi_error = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    check_error(mpi_error);
-
-    int size;
-    mpi_error = MPI_Comm_size(MPI_COMM_WORLD, &size);
-    check_error(mpi_error);
-
-    if (size < 2) {
-        printf("At least 2 ranks are needed.\n");
-        exit(1);
-    }
+void do_work(int rank) {
+#ifdef SCOREP_USER_ENABLE
+    SCOREP_USER_REGION( "region", SCOREP_USER_REGION_TYPE_FUNCTION )
+#endif //SCOREP_USER_ENABLE
 
     int nelements      = 1;
     MPI_Datatype dtype = MPI_INT;
@@ -85,6 +75,30 @@ int main(int argc, char **argv) {
         }
         printf("\n");
     }
+
+}
+
+int main(int argc, char **argv) {
+
+    int rank;
+    int mpi_error;
+
+    MPI_Init(&argc, &argv);
+
+    mpi_error = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    check_error(mpi_error);
+
+    int size;
+    mpi_error = MPI_Comm_size(MPI_COMM_WORLD, &size);
+    check_error(mpi_error);
+
+    if (size < 2) {
+        printf("At least 2 ranks are needed.\n");
+        exit(1);
+    }
+
+    do_work(rank);
+
 
     MPI_Finalize();
 
