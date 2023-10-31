@@ -25,6 +25,30 @@
 
 static int mpiP_api_init = 0;
 
+/*
+#define MAX_REGION_NAME_LEN 1025
+static char current_region[MAX_REGION_NAME_LEN];
+*/
+
+void
+mpiP_region_enter(const char * region_name)
+{
+  /*
+  if (strlen(region_name) > (MAX_REGION_NAME_LEN - 1)) {
+    printf("Error: the maximum name length for a region name is %d\n", MAX_REGION_NAME_LEN-1);
+    exit(1);
+  }
+  strcpy(current_region, region_name);
+  */
+  fprintf(tracefile, "REGION ENTER %s", region_name);
+}
+
+void
+mpiP_region_exit(const char * region_name)
+{
+  fprintf(tracefile, "REGION EXIT %s", region_name);
+}
+
 void
 mpiP_init_api ()
 {

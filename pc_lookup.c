@@ -29,6 +29,8 @@ static char *svnid = "$Id$";
 #include "mpiPi.h"
 #include "mpiPconfig.h"
 
+#define PTR void*
+
 #ifdef ENABLE_BFD
 #ifndef CEXTRACT
 #include "bfd.h"
@@ -36,6 +38,9 @@ static char *svnid = "$Id$";
 #include <search.h>
 #endif
 #endif
+
+#define sprintf_vma(s,x) sprintf (s, "%016lx", x)
+
 static asymbol **syms;
 static bfd_vma pc;
 static const char *filename;

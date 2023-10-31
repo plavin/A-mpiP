@@ -33,6 +33,8 @@ extern char *mpiP_get_executable_name (void);
 extern int mpiP_find_src_loc (void *i_addr_hex, char **o_file_str,
 			      int *o_lineno, char **o_funct_str);
 extern char *mpiP_format_address (void *pval, char *addr_buf);
+extern void mpiP_region_enter(const char * region_name);
+extern void mpiP_region_exit(const char * region_name);
 
 #else /* __STDC__ */
 
@@ -44,6 +46,8 @@ extern mpiP_TIMER mpiP_gettime ( /* void */ );
 extern char *mpiP_get_executable_name ( /* void */ );
 extern int mpiP_find_src_loc ( /* void */ );
 extern char *mpiP_format_address ( /*void* pval*, char* addr_buf */ );
+extern void mpiPi_region_enter(/*const char * region_name*/);
+extern void mpiPi_region_exit(/*const char * region_name*/);
 #endif /* __STDC__ */
 #endif /* __CEXTRACT__ */
 
