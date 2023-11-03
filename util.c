@@ -18,6 +18,7 @@ static char *svnid = "$Id$";
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <threads.h>
 
 #include "mpiPi.h"
 #ifndef ENABLE_API_ONLY
@@ -26,6 +27,8 @@ static char *svnid = "$Id$";
 
 // file to trace to
 FILE *tracefile;
+mtx_t trace_mtx;
+
 // trace all ranks or just rank 0
 int traceAllRanks;
 
@@ -63,6 +66,8 @@ mpiPi_getenv ()
 
   tracefile = stdout;
   traceAllRanks = 0;
+
+  mtx_init(&trace_mtx, mtx_plain);
 
   ep = getenv ("MPIP");
   mpiPi.envStr = (ep ? strdup (ep) : 0);

@@ -16,7 +16,7 @@ void check_error(int mpi_error) {
 
 void do_work(int rank) {
 #ifdef SCOREP_USER_ENABLE
-    SCOREP_USER_REGION( "region", SCOREP_USER_REGION_TYPE_FUNCTION )
+    SCOREP_USER_REGION( "do_work_region", SCOREP_USER_REGION_TYPE_FUNCTION )
 #endif //SCOREP_USER_ENABLE
 
     int nelements      = 1;

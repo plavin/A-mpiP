@@ -59,6 +59,13 @@ if test -z "${FFLAGS}" ; then
 fi
 AC_SUBST(FFLAGS)
 
+# Perform a compile test using -std=gnu99, set has_gnu99
+#if test "$has_gnu99" -eq "1"; then
+#  AC_SUBST([MY_GNU99], [-std=gnu99])
+#fi
+#
+#AC_PROG_CC_STDC
+
 AC_ARG_WITH(libs,
 	AS_HELP_STRING(--with-libs,Specifies libraries (-llib1 -llib2).),
 	LIBS=$withval

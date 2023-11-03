@@ -1,4 +1,4 @@
-all: async-test async-test-mpip async-test-scorep
+all: async-test async-test-mpip async-test-scorep async-test-scorep-scoped
 
 async-test: main.cc
 	CC main.cc -o async-test
@@ -9,7 +9,10 @@ async-test-mpip: main.cc
 async-test-scorep: main.cc
 	scorep CC main.cc -o async-test-scorep
 
+async-test-scorep-scoped: main.cc
+	scorep --user --nocompiler CC main.cc -o async-test-scorep-scoped -DSCOREP_USER_ENABLE=1
+
 clean:
-	rm -f aync-test async-test-mpip async-test-scorep
+	rm -f aync-test async-test-mpip async-test-scorep async-test-scorep-scoped
 
 .PHONY: all clean

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <threads.h>
 #include "mpiP-stats.h"
 #include "mpiPi.h"
 
@@ -62,6 +63,48 @@ get_histogram_bin_str (mpiPi_histogram_t * h, int v, char *s)
     }
 
   sprintf (s, "%8d - %8d", min, max);
+}
+
+/*
+ * ============================================================================
+ * Custom string append function
+ * ============================================================================
+ */
+
+// str: string to append to
+// fmt: the format string to append to str
+// ...: arguments to fmt
+// Return: the new length of str or -1 if there was an error
+int strappend(char **str, const char *fmt, ...)
+{
+  // Step 1: Use snprintf to get the length of the format string
+  va_list args;
+  va_start(args, fmt);
+  int fmt_len = vsnprintf(NULL, 0, fmt, args)+1;
+  va_end(args);
+  if (fmt_len < 0){
+    return -1; //error
+  }
+
+  // Step 2: Re-alloc str
+  if (!*str) {
+    *str = (char*)malloc(sizeof(char)*1);
+    *str[0] = '\0';
+  }
+  int old_len = strlen(*str);
+  *str = realloc(*str, old_len + fmt_len + 1);
+
+  // Step 3: Alloc space for fmt_str
+  char *fmt_str = (char*)malloc(fmt_len*sizeof(char)+1);
+  va_start(args, fmt);
+  vsnprintf(fmt_str, fmt_len, fmt, args);
+  va_end(args);
+
+
+  // Step 4: Concatenate strings and free fmt_str
+  strcat(*str, fmt_str);
+  free(fmt_str);
+  return old_len + fmt_len;
 }
 
 /*
@@ -197,7 +240,7 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                         double dur, double sendSize, double ioSize,
                         double rmaSize, int isColl, MPI_Comm *comm,
                         int dest,
-                        const int *sendcount, 
+                        const int *sendcount,
                         const int *recvcount)
 {
   int i;
@@ -253,12 +296,29 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       }
       */
 
+
+    // build entire line at once so that they whole string gets printed to the file at once
+
       mpiPi_TIME now;
       double dur;
       mpiPi_GETTIME (&now);
       dur = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time));
-      fprintf(tracefile, "TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur,
-             mpiPi.lookup[op - mpiPi_BASE].name);
+      /*
+      int mtx_ret = mtx_lock(&trace_mtx);
+      if (mtx_ret != thrd_success) {
+        printf("Error calling mtx_lock\n");
+        exit(1);
+      }
+      */
+
+
+      char *trace_str = NULL;
+      char *tmp_str;
+      strappend(&trace_str, "TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur, mpiPi.lookup[op - mpiPi_BASE].name);
+
+      //fprintf(tracefile, "TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur,
+       //      mpiPi.lookup[op - mpiPi_BASE].name);
+
       stat->prev_csid = csp->tmpid;
       stat->prev_time = now;
 
@@ -270,17 +330,19 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
           int doTrans = (comm != NULL) && (*comm != MPI_COMM_NULL);
           if (doTrans) {
               if (PMPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
-                  fprintf(tracefile, "MPI Comm Group  Error\n");
+                  strappend(&trace_str, "MPI Comm Group Error\n");
+                 //fprintf(tracefile, "MPI Comm Group  Error\n");
               }
               if (PMPI_Comm_group(*comm, &thisGroup) != MPI_SUCCESS) {
-                  fprintf(tracefile, "MPI Comm Group Error\n");
+                  strappend(&trace_str, "MPI Comm Group Error\n");
+                  //fprintf(tracefile, "MPI Comm Group Error\n");
               }
           }
-          
+
           // mpi trace
           if (isColl) {
               int nranks, *ranks, *gRanksOut, i;
-              
+
               // translate this group to global ranks
               if (doTrans) {
                   PMPI_Group_size(thisGroup, &nranks);
@@ -291,17 +353,27 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                   }
                   PMPI_Group_translate_ranks(thisGroup, nranks, ranks,
                                              worldGroup, gRanksOut);
-                  
-                  // print
-                  fprintf(tracefile, "coll %p %.0f to ", *comm, sendSize);
+
+                  strappend(&trace_str, "coll %p %.0f to ", *comm, sendSize);
+
+                  //fprintf(tracefile, "coll %p %.0f to ", *comm, sendSize);
                   for(i=0; i < nranks; ++i) {
-                      fprintf(tracefile, "%d", gRanksOut[i]);
-                      if (sendcount) {fprintf(tracefile, ">%d", sendcount[i]);}
-                      if (recvcount) {fprintf(tracefile, "<%d", recvcount[i]);}
-                      fprintf(tracefile, " ");
+                      strappend(&trace_str, "%d", gRanksOut[i]);
+                      //fprintf(tracefile, "%d", gRanksOut[i]);
+                      if (sendcount) {
+                        strappend(&trace_str, ">%d", sendcount[i]);
+                        //fprintf(tracefile, ">%d", sendcount[i]);
+                      }
+                      if (recvcount) {
+                        strappend(&trace_str, "<%d", recvcount[i]);
+                        //fprintf(tracefile, "<%d", recvcount[i]);
+                      }
+                      strappend(&trace_str, " ");
+                      //fprintf(tracefile, " ");
                   }
               }
-              fprintf(tracefile, "\n");
+              strappend(&trace_str, "\n");
+              //fprintf(tracefile, "\n");
 
               if (doTrans) {
                   free(ranks);
@@ -314,10 +386,14 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                   // translate the destination rank to global
                   PMPI_Group_translate_ranks(thisGroup, 1, &dest,
                                              worldGroup, &outRank);
-                  fprintf(tracefile, "p2p %.0f to %d:%d\n", sendSize,
-                         dest, outRank);
+
+                  strappend(&trace_str, "p2p %.0f to %d:%d\n", sendSize, dest, outRank);
+
+//                  fprintf(tracefile, "p2p %.0f to %d:%d\n", sendSize,
+ //                        dest, outRank);
               } else {
-                  fprintf(tracefile, "\n");
+                  strappend(&trace_str, "\n");
+                  //fprintf(tracefile, "\n");
               }
           }
 
@@ -326,6 +402,18 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
               PMPI_Group_free(&thisGroup);
           }
       }
+
+      mtx_lock(&trace_mtx);
+      fprintf(tracefile, trace_str);
+      mtx_unlock(&trace_mtx);
+      free(trace_str);
+      /*
+      mtx_ret = mtx_unlock(&trace_mtx);
+      if (mtx_ret != thrd_success) {
+        printf("Error calling mtx_unlock\n");
+        exit(1);
+      }
+      */
 
       // reset time so we don't include trace time
       mpiPi_GETTIME (&now);

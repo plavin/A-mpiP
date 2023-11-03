@@ -29,6 +29,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+#include <threads.h>
 
 #include "mpiPconfig.h"
 
@@ -65,6 +66,7 @@ typedef char mpip_const_char_t;
 
 //trace file
 extern FILE *tracefile;
+extern mtx_t trace_mtx;
 extern int traceAllRanks;
 
 typedef char mpiPi_hostname_t[MPIPI_HOSTNAME_LEN_MAX];

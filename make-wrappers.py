@@ -1183,6 +1183,8 @@ def CreateWrapper(funct, olist):
 
     # extended info for tracing
     isCollective = (funct in collectiveList)
+    #PATRICK
+    #print("paramConciseList: ", fdict[funct].paramConciseList)
     destStr = "-1, ";
     if funct in pt2ptList :
         destStr = "*dest, "
