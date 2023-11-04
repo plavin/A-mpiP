@@ -41,38 +41,46 @@ mpiP_region_enter(const char * region_name)
   strcpy(current_region, region_name);
   */
   thrd_yield();
+  /*
   int mtx_ret = mtx_lock(&trace_mtx);
   if (mtx_ret != thrd_success) {
     printf("Error calling mtx_lock in mpiP_region_enter\n");
     exit(1);
   }
+  */
 
   fprintf(tracefile, "REGION ENTER %s\n", region_name);
 
-  mtx_ret = mtx_unlock(&trace_mtx);
+  //mtx_ret = mtx_unlock(&trace_mtx);
+  /*
   if (mtx_ret != thrd_success) {
     printf("Error calling mtx_unlock in mpiP_region_enter\n");
     exit(1);
   }
+  */
 }
 
 void
 mpiP_region_exit(const char * region_name)
 {
   thrd_yield();
-  int mtx_ret = mtx_lock(&trace_mtx);
+  //int mtx_ret = mtx_lock(&trace_mtx);
+  /*
   if (mtx_ret != thrd_success) {
     printf("Error calling mtx_lock in mpiP_region_exit\n");
     exit(1);
   }
+  */
 
   fprintf(tracefile, "REGION EXIT %s\n", region_name);
 
-  mtx_ret = mtx_unlock(&trace_mtx);
+  //mtx_ret = mtx_unlock(&trace_mtx);
+  /*
   if (mtx_ret != thrd_success) {
     printf("Error calling mtx_unlock in mpiP_region_exit\n");
     exit(1);
   }
+  */
 }
 
 void

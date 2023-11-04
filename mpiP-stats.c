@@ -403,9 +403,9 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
           }
       }
 
-      mtx_lock(&trace_mtx);
+      //mtx_lock(&trace_mtx);
       fprintf(tracefile, trace_str);
-      mtx_unlock(&trace_mtx);
+      //mtx_unlock(&trace_mtx);
       free(trace_str);
       /*
       mtx_ret = mtx_unlock(&trace_mtx);
