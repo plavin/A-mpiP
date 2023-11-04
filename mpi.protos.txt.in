@@ -332,8 +332,6 @@ int MPI_Startall ( int count, MPI_Request *array_of_requests )
 
 @int MPI_Status_f2c ( MPI_Fint *f_status, MPI_Status *c_status )
 
-int MPI_Test ( MPI_Request *request, int *flag, MPI_Status *status )
-
 int MPI_Test_cancelled ( MPI_Status *status, int *flag )
 directives
 	nowrapper
