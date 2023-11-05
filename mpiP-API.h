@@ -35,6 +35,7 @@ extern int mpiP_find_src_loc (void *i_addr_hex, char **o_file_str,
 extern char *mpiP_format_address (void *pval, char *addr_buf);
 extern void mpiP_region_enter(const char * region_name);
 extern void mpiP_region_exit(const char * region_name);
+extern void mpiP_finalize_trace();
 
 #else /* __STDC__ */
 

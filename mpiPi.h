@@ -66,6 +66,8 @@ typedef char mpip_const_char_t;
 
 //trace file
 extern FILE *tracefile;
+#define REGION_NAME_MAX 1024
+extern char current_region[REGION_NAME_MAX];
 extern mtx_t trace_mtx;
 extern int traceAllRanks;
 

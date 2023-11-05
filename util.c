@@ -287,18 +287,20 @@ mpiPi_getenv ()
               break;
 
             case 'a':
-	      {
-		if (traceAllRanks) {
-		  char fileStr[200];
-		  sprintf(fileStr, "%s_%d", optarg, mpiPi.rank);
-		  tracefile = fopen(fileStr, "w+");
-		} else {
-		  tracefile = fopen(optarg, "w+");
-		}
-		if (tracefile == NULL) {
-		  mpiPi_abort("Unable to open trace file (%s)\n", optarg);
-		}
-	      }
+              {
+                if (traceAllRanks) {
+                  char fileStr[200];
+                  sprintf(fileStr, "%s_%d", optarg, mpiPi.rank);
+                  tracefile = fopen(fileStr, "w+");
+                } else {
+                  tracefile = fopen(optarg, "w+");
+                }
+                if (tracefile == NULL) {
+                  mpiPi_abort("Unable to open trace file (%s)\n", optarg);
+                }
+                // Print header
+                fprintf(tracefile, "callsite,op,dur_us,sendSize_B,dest_group,dest_global,region\n");
+              }
               break;
             case 'b':
             case 'h':

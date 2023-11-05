@@ -19,6 +19,8 @@ static char *svnid = "$Id$";
 #include <unistd.h>
 #include "mpiPi.h"
 
+char current_region[REGION_NAME_MAX] = "";
+
 
 
 static int

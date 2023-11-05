@@ -109,6 +109,16 @@ int strappend(char **str, const char *fmt, ...)
 
 /*
  * ============================================================================
+ * New tracing functionality
+ * ============================================================================
+ */
+
+void emit_trace_p2p(int cs, int op, double dur_us, double sendSize_B, int dest, int outRank) {
+  fprintf(tracefile, "%d,%s,%f,%.0f,%d,%d,%s\n", cs, mpiPi.lookup[op - mpiPi_BASE].name, dur_us, sendSize_B, dest, outRank, current_region);
+}
+
+/*
+ * ============================================================================
  *
  * Per-thread statistics
  *
@@ -243,6 +253,9 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                         const int *sendcount,
                         const int *recvcount)
 {
+  mpiPi_TIME now;
+  mpiPi_GETTIME (&now);
+
   int i;
   callsite_stats_t *csp = NULL;
   callsite_stats_t key;
@@ -297,12 +310,9 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       */
 
 
-    // build entire line at once so that they whole string gets printed to the file at once
 
-      mpiPi_TIME now;
-      double dur;
-      mpiPi_GETTIME (&now);
-      dur = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time));
+      double dur_us;
+      dur_us = mpiPi_GETTIMEDIFF (&now, &(stat->prev_time)); //microseconds, if using MPI_Wtime
       /*
       int mtx_ret = mtx_lock(&trace_mtx);
       if (mtx_ret != thrd_success) {
@@ -310,11 +320,13 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
         exit(1);
       }
       */
+      // For now, I'm going to disable the collective stuff. We can add that back later.
+      // Need to focus on getting point to point working first.
 
-
+      // build entire line at once so that they whole string gets printed to the file at once
       char *trace_str = NULL;
-      char *tmp_str;
-      strappend(&trace_str, "TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur, mpiPi.lookup[op - mpiPi_BASE].name);
+
+      //strappend(&trace_str, "TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur, mpiPi.lookup[op - mpiPi_BASE].name);
 
       //fprintf(tracefile, "TRACE %d -> %d %.1f %s ", stat->prev_csid, csp->tmpid, dur,
        //      mpiPi.lookup[op - mpiPi_BASE].name);
@@ -330,17 +342,17 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
           int doTrans = (comm != NULL) && (*comm != MPI_COMM_NULL);
           if (doTrans) {
               if (PMPI_Comm_group(MPI_COMM_WORLD, &worldGroup) != MPI_SUCCESS) {
-                  strappend(&trace_str, "MPI Comm Group Error\n");
+                  //strappend(&trace_str, "MPI Comm Group Error\n");
                  //fprintf(tracefile, "MPI Comm Group  Error\n");
               }
               if (PMPI_Comm_group(*comm, &thisGroup) != MPI_SUCCESS) {
-                  strappend(&trace_str, "MPI Comm Group Error\n");
+                  //strappend(&trace_str, "MPI Comm Group Error\n");
                   //fprintf(tracefile, "MPI Comm Group Error\n");
               }
           }
 
-          // mpi trace
           if (isColl) {
+            /* DON'T DELETE - Collective communication temporarily disabled
               int nranks, *ranks, *gRanksOut, i;
 
               // translate this group to global ranks
@@ -379,6 +391,7 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                   free(ranks);
                   free(gRanksOut);
               }
+              */
           } else {
               if (doTrans && dest != -1) {
                   // pt2pt
@@ -387,12 +400,14 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                   PMPI_Group_translate_ranks(thisGroup, 1, &dest,
                                              worldGroup, &outRank);
 
-                  strappend(&trace_str, "p2p %.0f to %d:%d\n", sendSize, dest, outRank);
+                  //strappend(&trace_str, "p2p %.0f to %d:%d\n", sendSize, dest, outRank);
+                  emit_trace_p2p(csp->tmpid, op, dur_us, sendSize, dest, outRank);
 
 //                  fprintf(tracefile, "p2p %.0f to %d:%d\n", sendSize,
  //                        dest, outRank);
               } else {
-                  strappend(&trace_str, "\n");
+                  emit_trace_p2p(csp->tmpid, op, dur_us, sendSize, -1, -1);
+                  //strappend(&trace_str, "\n");
                   //fprintf(tracefile, "\n");
               }
           }

@@ -30,6 +30,11 @@ static int mpiP_api_init = 0;
 static char current_region[MAX_REGION_NAME_LEN];
 */
 
+void mpiP_finalize_trace() {
+  if (tracefile != stdout) {
+    fclose(tracefile);
+  }
+}
 void
 mpiP_region_enter(const char * region_name)
 {
@@ -40,7 +45,6 @@ mpiP_region_enter(const char * region_name)
   }
   strcpy(current_region, region_name);
   */
-  thrd_yield();
   /*
   int mtx_ret = mtx_lock(&trace_mtx);
   if (mtx_ret != thrd_success) {
@@ -49,7 +53,32 @@ mpiP_region_enter(const char * region_name)
   }
   */
 
-  fprintf(tracefile, "REGION ENTER %s\n", region_name);
+  // Instead of printing to a file, set a variable that will be
+  // used by mpiP-stats when writing
+  //fprintf(tracefile, "REGION ENTER %s\n", region_name);
+
+  if (strchr(region_name, '.')) {
+    printf("ERROR: You may not use '.' in your region names\n");
+    exit(1);
+  }
+
+  if (!strcmp(current_region, "")) {
+    // Not currently in a region
+    if (strlen(region_name) > REGION_NAME_MAX-1) {
+      printf("WARNING: Cannot append to current_region. Region name too long.\n");
+    } else {
+      strncpy(current_region, region_name, REGION_NAME_MAX);
+    }
+  } else {
+    // In a region already
+    int len = strlen(current_region);
+    if (len >= REGION_NAME_MAX-2) {
+      printf("WARNING: Cannot append to current_region. Combined region name too long.\n");
+    } else {
+      strncpy(current_region+len, ".", REGION_NAME_MAX-len);
+      strncpy(current_region+len+1, region_name, REGION_NAME_MAX-len-1);
+    }
+  }
 
   //mtx_ret = mtx_unlock(&trace_mtx);
   /*
@@ -63,7 +92,6 @@ mpiP_region_enter(const char * region_name)
 void
 mpiP_region_exit(const char * region_name)
 {
-  thrd_yield();
   //int mtx_ret = mtx_lock(&trace_mtx);
   /*
   if (mtx_ret != thrd_success) {
@@ -72,7 +100,41 @@ mpiP_region_exit(const char * region_name)
   }
   */
 
-  fprintf(tracefile, "REGION EXIT %s\n", region_name);
+    /*
+  char *ptr = strrchr(current_region, '.');
+  if (ptr) {
+    // In nested region
+    if (strcmp(ptr, current_region)) {
+      printf("ERROR: Tried to leave region we are not in\n");
+      exit(1);
+    } else {
+      ptr[0] = '\0';
+    }
+  } else if (!strcmp(current_region, "")) {
+    printf("ERROR: Not currently in region.\n");
+    exit(1);
+  } else {
+    // In region but not nested
+    if (strcmp(current_region, current_region)) {
+      printf("ERROR: Tried to leave region we are not in.\n");
+      exit(1);
+    } else {
+      current_region[0] = '\0';
+    }
+  }
+  */
+  //fprintf(tracefile, "REGION EXIT %s\n", region_name);
+
+  //TODO: Implement check to see if we are leaving current region
+  char *ptr = strrchr(current_region, '.');
+  if (ptr) {
+    ptr[0] = '\0';
+  } else if (strlen(current_region) > 0) {
+    current_region[0] = '\0';
+  } else {
+    printf("ERROR: Tried to leave region but we aren't in one\n");
+    exit(1);
+  }
 
   //mtx_ret = mtx_unlock(&trace_mtx);
   /*
